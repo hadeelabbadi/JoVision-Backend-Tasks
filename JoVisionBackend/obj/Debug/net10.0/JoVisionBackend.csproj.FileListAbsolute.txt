@@ -31,3 +31,4 @@
 /workspaces/JoVision-Backend-Tasks/JoVisionBackend/obj/Debug/net10.0/JoVisionBackend.pdb
 /workspaces/JoVision-Backend-Tasks/JoVisionBackend/obj/Debug/net10.0/JoVisionBackend.genruntimeconfig.cache
 /workspaces/JoVision-Backend-Tasks/JoVisionBackend/obj/Debug/net10.0/ref/JoVisionBackend.dll
+/workspaces/JoVision-Backend-Tasks/JoVisionBackend/obj/Debug/net10.0/JoVisionBackend.sourcelink.json
