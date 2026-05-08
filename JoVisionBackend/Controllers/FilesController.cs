@@ -74,5 +74,70 @@ namespace JoVisionBackend.Controllers
 
             return Ok("Deleted");
         }
+
+        [HttpPut("Update")]
+public async Task<IActionResult> Update(
+    IFormFile file,
+    [FromForm] string owner)
+{
+    if (file == null || string.IsNullOrEmpty(owner))
+    {
+        return BadRequest();
+    }
+
+    var image = images.FirstOrDefault(x =>
+        x.FileName == file.FileName &&
+        x.Owner == owner);
+
+    if (image == null)
+    {
+        return BadRequest();
+    }
+
+    var uploadsFolder = Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "Uploads");
+
+    var filePath = Path.Combine(
+        uploadsFolder,
+        file.FileName);
+
+    using (var stream = new FileStream(filePath, FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+
+    return Ok("Updated");
+    }
+
+    [HttpGet("Retrieve")]
+public IActionResult Retrieve(
+    [FromQuery] string fileName,
+    [FromQuery] string owner)
+{
+    var image = images.FirstOrDefault(x =>
+        x.FileName == fileName &&
+        x.Owner == owner);
+
+    if (image == null)
+    {
+        return BadRequest();
+    }
+
+    var filePath = Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "Uploads",
+        fileName);
+
+    if (!System.IO.File.Exists(filePath))
+    {
+        return BadRequest();
+    }
+
+    var bytes = System.IO.File.ReadAllBytes(filePath);
+
+    return File(bytes, "image/jpeg", fileName);
+    }
+
     }
 }
