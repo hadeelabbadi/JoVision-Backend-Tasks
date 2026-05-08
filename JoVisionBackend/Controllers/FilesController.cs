@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using JoVisionBackend.Models;
 
 namespace JoVisionBackend.Controllers
 {
@@ -6,6 +7,8 @@ namespace JoVisionBackend.Controllers
     [Route("[controller]")]
     public class FilesController : ControllerBase
     {
+        private static List<ImageData> images = new();
+
         [HttpPost("Create")]
         public async Task<IActionResult> Create(
             IFormFile file,
@@ -34,6 +37,14 @@ namespace JoVisionBackend.Controllers
                 await file.CopyToAsync(stream);
             }
 
+            images.Add(new ImageData
+            {
+                FileName = file.FileName,
+                Owner = owner,
+                CreationDate = DateTime.Now,
+                ModificationDate = DateTime.Now
+            });
+
             return Ok("Created");
         }
 
@@ -41,6 +52,14 @@ namespace JoVisionBackend.Controllers
         public IActionResult Delete(
             [FromQuery] string fileName)
         {
+            var image = images.FirstOrDefault(x =>
+                x.FileName == fileName);
+
+            if (image != null)
+            {
+                images.Remove(image);
+            }
+
             var filePath = Path.Combine(
                 Directory.GetCurrentDirectory(),
                 "Uploads",
@@ -58,9 +77,19 @@ namespace JoVisionBackend.Controllers
 
         [HttpPut("Update")]
         public async Task<IActionResult> Update(
-            IFormFile file)
+            IFormFile file,
+            [FromForm] string owner)
         {
             if (file == null)
+            {
+                return BadRequest();
+            }
+
+            var image = images.FirstOrDefault(x =>
+                x.FileName == file.FileName &&
+                x.Owner == owner);
+
+            if (image == null)
             {
                 return BadRequest();
             }
@@ -77,6 +106,8 @@ namespace JoVisionBackend.Controllers
             {
                 await file.CopyToAsync(stream);
             }
+
+            image.ModificationDate = DateTime.Now;
 
             return Ok("Updated");
         }
@@ -98,6 +129,39 @@ namespace JoVisionBackend.Controllers
             var bytes = System.IO.File.ReadAllBytes(filePath);
 
             return File(bytes, "image/jpeg", fileName);
+        }
+
+        [HttpGet("Filter")]
+        public IActionResult Filter(
+            [FromQuery] string? owner)
+        {
+            var result = images;
+
+            if (!string.IsNullOrEmpty(owner))
+            {
+                result = result
+                    .Where(x => x.Owner == owner)
+                    .ToList();
+            }
+
+            return Ok(result);
+        }
+
+        [HttpPut("TransferOwnership")]
+        public IActionResult TransferOwnership(
+            [FromQuery] string oldOwner,
+            [FromQuery] string newOwner)
+        {
+            var ownerFiles = images
+                .Where(x => x.Owner == oldOwner)
+                .ToList();
+
+            foreach (var file in ownerFiles)
+            {
+                file.Owner = newOwner;
+            }
+
+            return Ok(ownerFiles);
         }
     }
 }
