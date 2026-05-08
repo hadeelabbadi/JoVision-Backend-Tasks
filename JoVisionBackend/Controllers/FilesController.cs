@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using JoVisionBackend.Models;
 
 namespace JoVisionBackend.Controllers
 {
@@ -7,8 +6,6 @@ namespace JoVisionBackend.Controllers
     [Route("[controller]")]
     public class FilesController : ControllerBase
     {
-        private static List<ImageData> images = new();
-
         [HttpPost("Create")]
         public async Task<IActionResult> Create(
             IFormFile file,
@@ -37,107 +34,70 @@ namespace JoVisionBackend.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            images.Add(new ImageData
-            {
-                FileName = file.FileName,
-                Owner = owner
-            });
-
             return Ok("Created");
         }
 
         [HttpDelete("Delete")]
         public IActionResult Delete(
-            [FromQuery] string fileName,
-            [FromQuery] string owner)
+            [FromQuery] string fileName)
         {
-            var image = images.FirstOrDefault(x =>
-                x.FileName == fileName &&
-                x.Owner == owner);
-
-            if (image == null)
-            {
-                return BadRequest();
-            }
-
             var filePath = Path.Combine(
                 Directory.GetCurrentDirectory(),
                 "Uploads",
                 fileName);
 
-            if (System.IO.File.Exists(filePath))
+            if (!System.IO.File.Exists(filePath))
             {
-                System.IO.File.Delete(filePath);
+                return BadRequest();
             }
 
-            images.Remove(image);
+            System.IO.File.Delete(filePath);
 
             return Ok("Deleted");
         }
 
         [HttpPut("Update")]
-public async Task<IActionResult> Update(
-    IFormFile file,
-    [FromForm] string owner)
-{
-    if (file == null || string.IsNullOrEmpty(owner))
-    {
-        return BadRequest();
-    }
+        public async Task<IActionResult> Update(
+            IFormFile file)
+        {
+            if (file == null)
+            {
+                return BadRequest();
+            }
 
-    var image = images.FirstOrDefault(x =>
-        x.FileName == file.FileName &&
-        x.Owner == owner);
+            var uploadsFolder = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "Uploads");
 
-    if (image == null)
-    {
-        return BadRequest();
-    }
+            var filePath = Path.Combine(
+                uploadsFolder,
+                file.FileName);
 
-    var uploadsFolder = Path.Combine(
-        Directory.GetCurrentDirectory(),
-        "Uploads");
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
 
-    var filePath = Path.Combine(
-        uploadsFolder,
-        file.FileName);
+            return Ok("Updated");
+        }
 
-    using (var stream = new FileStream(filePath, FileMode.Create))
-    {
-        await file.CopyToAsync(stream);
-    }
+        [HttpGet("Retrieve")]
+        public IActionResult Retrieve(
+            [FromQuery] string fileName)
+        {
+            var filePath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "Uploads",
+                fileName);
 
-    return Ok("Updated");
-    }
+            if (!System.IO.File.Exists(filePath))
+            {
+                return BadRequest();
+            }
 
-    [HttpGet("Retrieve")]
-public IActionResult Retrieve(
-    [FromQuery] string fileName,
-    [FromQuery] string owner)
-{
-    var image = images.FirstOrDefault(x =>
-        x.FileName == fileName &&
-        x.Owner == owner);
+            var bytes = System.IO.File.ReadAllBytes(filePath);
 
-    if (image == null)
-    {
-        return BadRequest();
-    }
-
-    var filePath = Path.Combine(
-        Directory.GetCurrentDirectory(),
-        "Uploads",
-        fileName);
-
-    if (!System.IO.File.Exists(filePath))
-    {
-        return BadRequest();
-    }
-
-    var bytes = System.IO.File.ReadAllBytes(filePath);
-
-    return File(bytes, "image/jpeg", fileName);
-    }
-
+            return File(bytes, "image/jpeg", fileName);
+        }
     }
 }
