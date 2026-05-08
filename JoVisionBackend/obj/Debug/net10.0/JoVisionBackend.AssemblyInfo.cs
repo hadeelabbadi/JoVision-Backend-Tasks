@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JoVisionBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4cb081f92777574acd2cbdc3526a4507b5a520c5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9ab2cc56a476170fb3c8958458b3d6e1e629d9de")]
 [assembly: System.Reflection.AssemblyProductAttribute("JoVisionBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JoVisionBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
